@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TextRepeat, Repeat Anything</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- Background canvas for animated grid -->
+  <canvas id="bgCanvas"></canvas>
+
+  <!-- Floating orbs -->
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+
+  <div class="page-wrapper">
+
+    <!-- ===== HEADER ===== -->
+    <header class="header">
+      <div class="header-inner">
+        <div class="logo">
+          <div class="logo-mark">
+            <span>R</span>
+          </div>
+          <span class="logo-text">TextRepeat</span>
+        </div>
+        <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">
+          <span class="theme-icon sun">&#9728;</span>
+          <span class="theme-label" id="themeLabel">Light</span>
+          <span class="theme-icon moon">&#9790;</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- ===== HERO ===== -->
+    <section class="hero">
+      <div class="hero-badge">
+        <span class="badge-dot"></span>
+        <span>Live Preview Active</span>
+      </div>
+      <h1 class="hero-title">
+        <span class="word-animate" style="--i:0">Repeat.</span>
+        <span class="word-animate accent-text" style="--i:1">Format.</span>
+        <span class="word-animate" style="--i:2">Create.</span>
+      </h1>
+      <p class="hero-sub word-animate" style="--i:3">Transform any text into perfectly repeated sequences with custom separators, numbering, and formatting, all in your browser.</p>
+    </section>
+
+    <!-- ===== MAIN APP ===== -->
+    <main class="app-container">
+
+      <!-- Input Column -->
+      <div class="panel panel-input anim-up" style="--d:0.1s">
+        <div class="panel-header">
+          <div class="panel-title">
+            <div class="panel-icon">✏</div>
+            <span>Input</span>
+          </div>
+          <div class="char-pill" id="inputCharCount">0 chars</div>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="inputText">Your text</label>
+          <textarea
+            id="inputText"
+            class="textarea fancy-scroll"
+            placeholder="Type or paste your text here…"
+            spellcheck="false"
+            rows="6"
+          ></textarea>
+          <div class="field-error" id="textError"></div>
+        </div>
+
+        <div class="field-row">
+          <div class="field-group half">
+            <label class="field-label" for="repeatCount">Repeat count</label>
+            <div class="number-wrap">
+              <button class="num-btn" id="decBtn" aria-label="Decrease">−</button>
+              <input type="number" id="repeatCount" class="number-input" value="3" min="1" max="10000" />
+              <button class="num-btn" id="incBtn" aria-label="Increase">+</button>
+            </div>
+            <div class="field-error" id="countError"></div>
+          </div>
+
+          <div class="field-group half">
+            <label class="field-label">Max allowed</label>
+            <div class="info-chip">10,000 reps</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Config Column -->
+      <div class="panel panel-config anim-up" style="--d:0.2s">
+        <div class="panel-header">
+          <div class="panel-title">
+            <div class="panel-icon">⚙</div>
+            <span>Config</span>
+          </div>
+        </div>
+
+        <!-- Separator -->
+        <div class="field-group">
+          <label class="field-label">Separator</label>
+          <div class="sep-grid">
+            <button class="sep-btn active" data-sep="space">
+              <span class="sep-icon">·</span>
+              <span>Space</span>
+            </button>
+            <button class="sep-btn" data-sep="newline">
+              <span class="sep-icon">↵</span>
+              <span>New line</span>
+            </button>
+            <button class="sep-btn" data-sep="comma">
+              <span class="sep-icon">,</span>
+              <span>Comma</span>
+            </button>
+            <button class="sep-btn" data-sep="custom">
+              <span class="sep-icon">✎</span>
+              <span>Custom</span>
+            </button>
+          </div>
+          <input type="text" id="customSep" class="text-input custom-sep-input" placeholder="Type your separator…" style="display:none" />
+        </div>
+
+        <!-- Prefix / Suffix -->
+        <div class="field-group">
+          <label class="field-label">Prefix & Suffix</label>
+          <div class="prefix-suffix-row">
+            <div class="ps-wrap">
+              <span class="ps-label">PRE</span>
+              <input type="text" id="prefix" class="text-input ps-input" placeholder="e.g. ➤ " />
+            </div>
+            <div class="ps-divider">→ text →</div>
+            <div class="ps-wrap">
+              <span class="ps-label">SUF</span>
+              <input type="text" id="suffix" class="text-input ps-input" placeholder="e.g. ;" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Toggles -->
+        <div class="field-group">
+          <label class="field-label">Options</label>
+          <div class="toggles-grid">
+            <label class="toggle-card" id="tc-numbering">
+              <input type="checkbox" id="lineNumbering" />
+              <div class="toggle-card-inner">
+                <span class="toggle-card-icon">#</span>
+                <div>
+                  <div class="toggle-card-name">Line numbers</div>
+                  <div class="toggle-card-desc">1. 2. 3. …</div>
+                </div>
+                <div class="toggle-switch-visual"></div>
+              </div>
+            </label>
+            <label class="toggle-card" id="tc-reverse">
+              <input type="checkbox" id="reverseOutput" />
+              <div class="toggle-card-inner">
+                <span class="toggle-card-icon">↕</span>
+                <div>
+                  <div class="toggle-card-name">Reverse</div>
+                  <div class="toggle-card-desc">Flip order</div>
+                </div>
+                <div class="toggle-switch-visual"></div>
+              </div>
+            </label>
+            <label class="toggle-card on" id="tc-trim">
+              <input type="checkbox" id="trimInput" checked />
+              <div class="toggle-card-inner">
+                <span class="toggle-card-icon">✂</span>
+                <div>
+                  <div class="toggle-card-name">Trim spaces</div>
+                  <div class="toggle-card-desc">Strip edges</div>
+                </div>
+                <div class="toggle-switch-visual"></div>
+              </div>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Output Column -->
+      <div class="panel panel-output anim-up" style="--d:0.3s">
+        <div class="panel-header">
+          <div class="panel-title">
+            <div class="panel-icon">◎</div>
+            <span>Output</span>
+          </div>
+          <div class="live-indicator">
+            <span class="pulse-dot"></span>
+            <span>live</span>
+          </div>
+        </div>
+
+        <textarea
+          id="outputArea"
+          class="textarea output-textarea fancy-scroll"
+          readonly
+          placeholder="Your repeated text appears here…"
+          rows="8"
+          spellcheck="false"
+        ></textarea>
+
+        <!-- Stats bar -->
+        <div class="stats-bar">
+          <div class="stat-item">
+            <div class="stat-value" id="statIn">0</div>
+            <div class="stat-label">Input chars</div>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="stat-item">
+            <div class="stat-value" id="statOut">0</div>
+            <div class="stat-label">Output chars</div>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="stat-item">
+            <div class="stat-value" id="statWords">0</div>
+            <div class="stat-label">Words</div>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="stat-item">
+            <div class="stat-value" id="statLines">0</div>
+            <div class="stat-label">Lines</div>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="action-bar">
+          <button class="btn btn-primary" id="repeatBtn">
+            <span class="btn-icon">⟳</span>
+            <span>Generate</span>
+          </button>
+          <button class="btn btn-copy" id="copyBtn">
+            <span class="btn-icon">⎘</span>
+            <span>Copy</span>
+          </button>
+          <button class="btn btn-download" id="downloadBtn">
+            <span class="btn-icon">↓</span>
+            <span>Download</span>
+          </button>
+          <button class="btn btn-clear" id="clearBtn">
+            <span class="btn-icon">✕</span>
+            <span>Clear</span>
+          </button>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- ===== FOOTER ===== -->
+    <footer class="footer">
+      <div class="footer-main">
+        <p>TextRepeat, 100% client-side, no data leaves your browser</p>
+      </div>
+      <div class="footer-credit">
+        <span class="credit-badge">
+          <span class="credit-icon">&#10084;</span>
+          Developed by <strong>Awais Ahmad</strong>
+          <span class="credit-sep">,</span>
+          <a href="mailto:awaisafaq0313@gmail.com" class="credit-email">awaisafaq0313@gmail.com</a>
+        </span>
+      </div>
+    </footer>
+
+  </div><!-- end page-wrapper -->
+
+  <script src="app.js"></script>
+</body>
+</html>
