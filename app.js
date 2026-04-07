@@ -199,20 +199,20 @@
     if (!txt) return;
     try {
       await navigator.clipboard.writeText(txt);
-      copyBtn.querySelector("span:last-child").textContent = "Copied!";
+      copyBtn.textContent = "Copied!";
       copyBtn.classList.add("success");
       setTimeout(() => {
-        copyBtn.querySelector("span:last-child").textContent = "Copy";
+        copyBtn.textContent = "Copy";
         copyBtn.classList.remove("success");
       }, 1800);
     } catch {
       // Fallback for older browsers
       outputArea.select();
       document.execCommand("copy");
-      copyBtn.querySelector("span:last-child").textContent = "Copied!";
+      copyBtn.textContent = "Copied!";
       copyBtn.classList.add("success");
       setTimeout(() => {
-        copyBtn.querySelector("span:last-child").textContent = "Copy";
+        copyBtn.textContent = "Copy";
         copyBtn.classList.remove("success");
       }, 1800);
     }
